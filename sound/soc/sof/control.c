@@ -13,6 +13,21 @@
 #include <linux/pm_runtime.h>
 #include "sof-priv.h"
 
+/* return the widget type of the comp the kcontrol is attached to */
+static int get_widget_type(struct snd_sof_dev *sdev,
+			   struct snd_sof_control *scontrol)
+{
+	struct snd_sof_widget *swidget;
+
+	list_for_each_entry(swidget, &sdev->widget_list, list) {
+		if (swidget->comp_id == scontrol->comp_id)
+			return swidget->id;
+	}
+
+	/* standalone kcontrol */
+	return -EINVAL;
+}
+
 static inline u32 mixer_to_ipc(unsigned int value, u32 *volume_map, int size)
 {
 	if (value >= size)
@@ -168,7 +183,9 @@ int snd_sof_switch_put(struct snd_kcontrol *kcontrol,
 	struct snd_sof_dev *sdev = scontrol->sdev;
 	struct sof_ipc_ctrl_data *cdata = scontrol->control_data;
 	unsigned int i, channels = scontrol->num_channels;
-	int ret, err;
+	int ret = 0, new_state, old_state;
+	int changed = 0;
+	int err;
 
 	ret = pm_runtime_get_sync(sdev->dev);
 	if (ret < 0) {
@@ -179,18 +196,46 @@ int snd_sof_switch_put(struct snd_kcontrol *kcontrol,
 		return ret;
 	}
 
-	/* update each channel */
-	for (i = 0; i < channels; i++) {
-		cdata->chanv[i].value = ucontrol->value.integer.value[i];
-		cdata->chanv[i].channel = i;
+	switch (get_widget_type(sdev, scontrol)) {
+	case snd_soc_dapm_pga:
+
+		/*
+		 * if the kcontrol is used for processing as in the case of pga,
+		 * values are channel-specific
+		 */
+		for (i = 0; i < channels; i++) {
+			new_state = ucontrol->value.integer.value[i];
+			old_state = cdata->chanv[i].value;
+			if (new_state != old_state)
+				changed = 1;
+			cdata->chanv[i].value = new_state;
+			cdata->chanv[i].channel = i;
+		}
+		break;
+	default:
+
+		/*
+		 * if the kcontrol is for routing or a standalone control,
+		 * all channel values are assumed to be identical
+		 */
+		for (i = 0; i < channels; i++) {
+			new_state = ucontrol->value.integer.value[0];
+			old_state = cdata->chanv[0].value;
+			if (new_state != old_state)
+				changed = 1;
+			cdata->chanv[i].value = new_state;
+			cdata->chanv[i].channel = i;
+		}
+		break;
 	}
 
-	/* notify DSP of mixer updates */
-	snd_sof_ipc_set_get_comp_data(sdev->ipc, scontrol,
-				      SOF_IPC_COMP_SET_VALUE,
-				      SOF_CTRL_TYPE_VALUE_CHAN_GET,
-				      SOF_CTRL_CMD_SWITCH,
-				      true);
+	/* notify DSP of switch state update if the control values are different */
+	if (changed)
+		snd_sof_ipc_set_get_comp_data(sdev->ipc, scontrol,
+					      SOF_IPC_COMP_SET_VALUE,
+					      SOF_CTRL_TYPE_VALUE_CHAN_GET,
+					      SOF_CTRL_CMD_SWITCH,
+					      true);
 
 	pm_runtime_mark_last_busy(sdev->dev);
 	err = pm_runtime_put_autosuspend(sdev->dev);
