@@ -9,6 +9,21 @@
 //
 
 #include <linux/firmware.h>
+#include <linux/string.h>
+#include <linux/delay.h>
+#include <linux/fs.h>
+#include <linux/slab.h>
+#include <linux/device.h>
+#include <linux/interrupt.h>
+#include <linux/module.h>
+#include <linux/dma-mapping.h>
+#include <linux/platform_device.h>
+#include <linux/firmware.h>
+#include <linux/string.h>
+#include <sound/soc-topology.h>
+#include <sound/soc.h>
+#include <sound/soc-dpcm.h>
+#include <uapi/sound/tlv.h>
 #include <sound/tlv.h>
 #include <sound/pcm_params.h>
 #include <uapi/sound/sof/tokens.h>
@@ -41,6 +56,15 @@
 
 /* size of tplg abi in byte */
 #define SOF_TPLG_ABI_SIZE 3
+
+#define MAX_VFE_NAME_LEN	64
+
+/* virtual FE DAI link info */
+struct virtual_fe_link_info {
+	const char link_name[MAX_VFE_NAME_LEN];
+	const char cpu_dai_name[MAX_VFE_NAME_LEN];
+	const char platform_name[MAX_VFE_NAME_LEN];
+};
 
 /* send pcm params ipc */
 static int ipc_pcm_params(struct snd_sof_widget *swidget, int dir)
@@ -610,6 +634,15 @@ static int get_token_u16(void *elem, void *object, u32 offset, u32 size)
 	return 0;
 }
 
+static int get_token_string(void *elem, void *object, u32 offset, u32 size)
+{
+	struct snd_soc_tplg_vendor_string_elem *velem = elem;
+	char *val = object + offset;
+
+	strncpy(val, velem->string, size);
+	return 0;
+}
+
 static int get_token_comp_format(void *elem, void *object, u32 offset, u32 size)
 {
 	struct snd_soc_tplg_vendor_string_elem *velem = elem;
@@ -708,6 +741,21 @@ static const struct sof_topology_token process_tokens[] = {
 	{SOF_TKN_PROCESS_TYPE, SND_SOC_TPLG_TUPLE_TYPE_STRING,
 		get_token_process_type,
 		offsetof(struct sof_ipc_comp_process, type), 0},
+};
+
+/* Virtual FE DAI tokens */
+static const struct sof_topology_token vfe_tokens[] = {
+	{SOF_TKN_VFE_LINK_NAME, SND_SOC_TPLG_TUPLE_TYPE_STRING,
+	 get_token_string,
+	 offsetof(struct virtual_fe_link_info, link_name), MAX_VFE_NAME_LEN},
+	{SOF_TKN_VFE_CPU_DAI_NAME, SND_SOC_TPLG_TUPLE_TYPE_STRING,
+	 get_token_string,
+	 offsetof(struct virtual_fe_link_info, cpu_dai_name),
+	 MAX_VFE_NAME_LEN},
+	{SOF_TKN_VFE_PLATFORM_NAME, SND_SOC_TPLG_TUPLE_TYPE_STRING,
+	 get_token_string,
+	 offsetof(struct virtual_fe_link_info, platform_name),
+	 MAX_VFE_NAME_LEN},
 };
 
 /* PCM */
@@ -1676,6 +1724,7 @@ static int sof_widget_load_siggen(struct snd_soc_component *scomp, int index,
 	struct snd_sof_dev *sdev = snd_soc_component_get_drvdata(scomp);
 	struct snd_soc_dapm_widget *widget = swidget->widget;
 	struct snd_soc_tplg_private *private = &tw->priv;
+	struct virtual_fe_link_info vfe;
 	const struct snd_kcontrol_new *kc = NULL;
 	struct sof_ipc_comp_tone *tone;
 	struct soc_mixer_control *sm;
@@ -1716,6 +1765,18 @@ static int sof_widget_load_siggen(struct snd_soc_component *scomp, int index,
 	tone->comp.pipeline_id = index;
 	tone->config.hdr.size = sizeof(tone->config);
 
+	/* parse generic comp tokens */
+	ret = sof_parse_tokens(scomp, &tone->config, comp_tokens,
+			       ARRAY_SIZE(comp_tokens), private->array,
+			       le32_to_cpu(private->size));
+	if (ret != 0) {
+		dev_err(sdev->dev, "error: parse tone.cfg tokens failed %d\n",
+			le32_to_cpu(private->size));
+		goto err;
+	}
+	sof_dbg_comp_config(scomp, &tone->config);
+
+	/* parse tone tokens */
 	ret = sof_parse_tokens(scomp, tone, tone_tokens,
 			       ARRAY_SIZE(tone_tokens), private->array,
 			       le32_to_cpu(private->size));
@@ -1725,26 +1786,48 @@ static int sof_widget_load_siggen(struct snd_soc_component *scomp, int index,
 		goto err;
 	}
 
-	ret = sof_parse_tokens(scomp, &tone->config, comp_tokens,
-			       ARRAY_SIZE(comp_tokens), private->array,
-			       le32_to_cpu(private->size));
-	if (ret != 0) {
-		dev_err(sdev->dev, "error: parse tone.cfg tokens failed %d\n",
-			le32_to_cpu(private->size));
-		goto err;
-	}
-
 	dev_dbg(sdev->dev, "tone %s: frequency %d amplitude %d sample rate %d\n",
 		swidget->widget->name, tone->frequency, tone->amplitude,
 		tone->sample_rate);
-	sof_dbg_comp_config(scomp, &tone->config);
 
 	swidget->private = tone;
 
 	ret = sof_ipc_tx_message(sdev->ipc, tone->comp.hdr.cmd, tone,
 				 sizeof(*tone), r, sizeof(*r));
-	if (ret >= 0)
-		return ret;
+	if (ret < 0)
+		goto err;
+
+	/* parse virtual FE link tokens */
+	ret = sof_parse_tokens(scomp, &vfe, vfe_tokens,
+			       ARRAY_SIZE(vfe_tokens), private->array,
+			       le32_to_cpu(private->size));
+	if (ret != 0) {
+		dev_err(sdev->dev, "error: parse vfe tokens failed %d\n",
+			le32_to_cpu(private->size));
+		goto err;
+	}
+	dev_dbg(sdev->dev,
+		"VFE link name %s: cpu dai name %s platform name %s\n",
+		vfe.link_name, vfe.cpu_dai_name, vfe.platform_name);
+
+	/*
+	 * create virtual FE link
+	 * This will be used to enable the codec when
+	 * the siggen pipeline is triggered
+	 */
+	ret = snd_soc_dpcm_vfe_new(scomp->card, index, vfe.link_name,
+				   vfe.cpu_dai_name, vfe.platform_name,
+				   SNDRV_PCM_STREAM_PLAYBACK);
+	if (ret < 0) {
+		dev_err(sdev->dev, "error: creating virtual FE %d\n",
+			private->size);
+		goto err;
+	}
+
+	/* set scontrol VFE name */
+	scontrol->vfe_link_name = kstrdup(vfe.link_name, GFP_KERNEL);
+
+	return 0;
 err:
 	kfree(tone);
 	return ret;
@@ -2168,6 +2251,16 @@ static int sof_widget_unload(struct snd_soc_component *scomp,
 		/* update enabled cores mask */
 		sdev->enabled_cores_mask &= ~(1 << pipeline->core);
 
+		break;
+	case snd_soc_dapm_siggen:
+
+		/* get siggen kcontrol */
+		kc = &widget->kcontrol_news[0];
+		sm = (struct soc_mixer_control *)kc->private_value;
+		scontrol = sm->dobj.private;
+
+		/* free virtual FE link */
+		snd_soc_dpcm_vfe_free(scomp->card, scontrol->vfe_link_name);
 		break;
 	default:
 		break;
