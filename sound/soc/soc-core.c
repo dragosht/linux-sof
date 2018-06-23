@@ -886,6 +886,8 @@ static int soc_bind_dai_link(struct snd_soc_card *card,
 	struct snd_soc_dai_link_component *codecs;
 	struct snd_soc_dai_link_component cpu_dai_component;
 	struct snd_soc_component *component;
+	struct snd_soc_dai **codec_dais;
+	struct snd_pcm_runtime *runtime;
 	int i;
 
 	if (dai_link->ignore)
@@ -939,6 +941,22 @@ static int soc_bind_dai_link(struct snd_soc_card *card,
 	}
 
 	soc_add_pcm_runtime(card, rtd);
+
+	/* if this is a virtual FE link, create runtime */
+	if (rtd->dai_link->dynamic && rtd->dai_link->no_pcm) {
+		runtime = kzalloc(sizeof(*runtime), GFP_KERNEL);
+		if (!runtime)
+			return -ENOMEM;
+
+		/* set playback runtime */
+		if (rtd->dai_link->dpcm_playback)
+			rtd->dpcm[SNDRV_PCM_STREAM_PLAYBACK].runtime = runtime;
+
+		/* set capture runtime */
+		if (rtd->dai_link->dpcm_capture)
+			rtd->dpcm[SNDRV_PCM_STREAM_CAPTURE].runtime = runtime;
+	}
+
 	return 0;
 
 _err_defer:
