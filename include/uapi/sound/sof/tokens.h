@@ -101,6 +101,11 @@
 /* Processing Components */
 #define SOF_TKN_PROCESS_TYPE                    900
 
+/* Virtual FE DAi Link */
+#define SOF_TKN_VFE_LINK_NAME			1000
+#define SOF_TKN_VFE_CPU_DAI_NAME		1001
+#define SOF_TKN_VFE_PLATFORM_NAME		1002
+
 /* for backward compatibility */
 #define SOF_TKN_EFFECT_TYPE	SOF_TKN_PROCESS_TYPE
 
