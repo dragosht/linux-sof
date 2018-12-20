@@ -1,3 +1,5 @@
+ccflags-y += -DDEBUG
+
 # SPDX-License-Identifier: GPL-2.0
 # Core support
 obj-$(CONFIG_SND_SOC) += common/
