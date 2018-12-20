@@ -1,3 +1,5 @@
+ccflags-y += -DDEBUG
+
 # SPDX-License-Identifier: GPL-2.0
 snd-soc-sst-dsp-objs := sst-dsp.o
 snd-soc-sst-acpi-objs := sst-acpi.o
