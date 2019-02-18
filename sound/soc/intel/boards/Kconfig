@@ -291,6 +291,41 @@ config SND_SOC_INTEL_BXT_RT298_MACH
 	   Say Y or m if you have such a device. This is a recommended option.
 	   If unsure select "N".
 
+if SND_SOC_SOF_APOLLOLAKE
+
+config SND_SOC_INTEL_BXT_TDF8532_MACH
+        tristate "ASoC Audio driver for BXT with TDF8532 in I2S mode"
+        depends on X86 && ACPI && I2C
+        select SND_SOC_TDF8532
+        select SND_SOC_COMPRESS
+        help
+	   This adds support for ASoC machine driver for Broxton IVI GP MRB platform
+	   Say Y if you have such a device.
+	   If unsure select "N".
+
+config SND_SOC_INTEL_BXT_PCM512x_MACH
+	tristate "Broxton with TI PCM512x codec"
+	depends on MFD_INTEL_LPSS && I2C && ACPI
+	select SND_SOC_PCM512x_I2C
+	select SND_SOC_HDAC_HDMI if SND_SOC_SOF_HDA_LINK
+	help
+	  This adds support for ASoC machine driver for Broxton platforms
+	  with TI PCM512x I2S audio codec.
+	  Say Y or m if you have such a device. This is a recommended option.
+	  If unsure select "N".
+
+config SND_SOC_INTEL_BXT_WM8804_MACH
+	tristate "Broxton with Wolfson/Cirrus WM8804 codec for Hifiberry Digi+"
+	depends on MFD_INTEL_LPSS && I2C && ACPI
+	select SND_SOC_WM8804_I2C
+	help
+	  This adds support for ASoC machine driver for Broxton platforms
+	  with Hifiberry Digiplus w/ Wolfson/Cirrus WM8804 I2S audio codec.
+	  Say Y or m if you have such a device. This is a recommended option.
+	  If unsure select "N".
+
+endif ## SND_SOC_SOF_APOLLOLAKE
+
 endif ## SND_SOC_INTEL_APL
 
 if SND_SOC_INTEL_KBL
