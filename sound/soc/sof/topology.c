@@ -2162,11 +2162,12 @@ static int sof_link_ssp_load(struct snd_soc_component *scomp, int index,
 	config->ssp.rx_slots = le32_to_cpu(hw_config->rx_slots);
 	config->ssp.tx_slots = le32_to_cpu(hw_config->tx_slots);
 
-	dev_dbg(sdev->dev, "tplg: config SSP%d fmt 0x%x mclk %d bclk %d fclk %d width (%d)%d slots %d mclk id %d\n",
+	dev_dbg(sdev->dev, "tplg: config SSP%d fmt 0x%x mclk %d bclk %d fclk %d width (%d)%d slots %d rx %d tx %d mclk id %d\n",
 		config->dai_index, config->format,
 		config->ssp.mclk_rate, config->ssp.bclk_rate,
 		config->ssp.fsync_rate, config->ssp.sample_valid_bits,
 		config->ssp.tdm_slot_width, config->ssp.tdm_slots,
+		config->ssp.rx_slots, config->ssp.tx_slots,
 		config->ssp.mclk_id);
 
 	/* send message to DSP */
