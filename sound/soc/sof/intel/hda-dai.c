@@ -306,6 +306,22 @@ struct snd_soc_dai_driver skl_dai[] = {
 				  SNDRV_PCM_RATE_8000_192000, SKL_FORMATS),
 },
 {
+
+	.name = "SSP6 Pin",
+	.playback = SOF_DAI_STREAM("ssp6 Tx", 1, 8,
+				   SNDRV_PCM_RATE_8000_192000, SKL_FORMATS),
+	.capture = SOF_DAI_STREAM("ssp6 Rx", 1, 8,
+				  SNDRV_PCM_RATE_8000_192000, SKL_FORMATS),
+},
+{
+
+	.name = "SSP7 Pin",
+	.playback = SOF_DAI_STREAM("ssp7 Tx", 1, 8,
+				   SNDRV_PCM_RATE_8000_192000, SKL_FORMATS),
+	.capture = SOF_DAI_STREAM("ssp7 Rx", 1, 8,
+				  SNDRV_PCM_RATE_8000_192000, SKL_FORMATS),
+},
+{
 	.name = "DMIC01 Pin",
 	.capture = SOF_DAI_STREAM("DMIC01 Rx", 1, 4,
 				  SNDRV_PCM_RATE_8000_192000, SKL_FORMATS),

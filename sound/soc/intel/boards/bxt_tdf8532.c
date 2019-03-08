@@ -28,12 +28,19 @@ static const struct snd_soc_dapm_widget broxton_tdf8532_widgets[] = {
 	SND_SOC_DAPM_MIC("DiranaCp", NULL),
 	SND_SOC_DAPM_HP("DiranaPb", NULL),
 	SND_SOC_DAPM_MIC("HdmiIn", NULL),
-	SND_SOC_DAPM_MIC("TestPinCp", NULL),
-	SND_SOC_DAPM_HP("TestPinPb", NULL),
 	SND_SOC_DAPM_MIC("BtHfpDl", NULL),
 	SND_SOC_DAPM_HP("BtHfpUl", NULL),
 	SND_SOC_DAPM_MIC("ModemDl", NULL),
 	SND_SOC_DAPM_HP("ModemUl", NULL),
+
+	SND_SOC_DAPM_MIC("TestPinCp1", NULL),
+	SND_SOC_DAPM_HP("TestPinPb1", NULL),
+	SND_SOC_DAPM_MIC("TestPinCp2", NULL),
+	SND_SOC_DAPM_HP("TestPinPb2", NULL),
+	SND_SOC_DAPM_MIC("TestPinCp3", NULL),
+	SND_SOC_DAPM_HP("TestPinPb3", NULL),
+
+
 };
 
 static const struct snd_soc_dapm_route broxton_tdf8532_map[] = {
@@ -56,12 +63,6 @@ static const struct snd_soc_dapm_route broxton_tdf8532_map[] = {
 	{ "hdmi_ssp1_in", NULL, "ssp1 Rx"},
 	{ "ssp1 Rx", NULL, "HdmiIn"},
 
-	{ "TestPin_ssp5_in", NULL, "ssp5 Rx"},
-	{ "ssp5 Rx", NULL, "TestPinCp"},
-
-	{ "TestPinPb", NULL, "ssp5 Tx"},
-	{ "ssp5 Tx", NULL, "TestPin_ssp5_out"},
-
 	{ "BtHfp_ssp0_in", NULL, "ssp0 Rx"},
 	{ "ssp0 Rx", NULL, "BtHfpDl"},
 
@@ -73,6 +74,27 @@ static const struct snd_soc_dapm_route broxton_tdf8532_map[] = {
 
 	{ "ModemUl", NULL, "ssp3 Tx"},
 	{ "ssp3 Tx", NULL, "Modem_ssp3_out"},
+
+	/* Test Pins */
+
+	{ "TestPin_ssp5_in", NULL, "ssp5 Rx"},
+	{ "ssp5 Rx", NULL, "TestPinCp1"},
+
+	{ "TestPinPb1", NULL, "ssp5 Tx"},
+	{ "ssp5 Tx", NULL, "TestPin_ssp5_out"},
+
+	{ "TestPin_ssp6_in", NULL, "ssp6 Rx"},
+	{ "ssp6 Rx", NULL, "TestPinCp2"},
+
+	{ "TestPinPb2", NULL, "ssp6 Tx"},
+	{ "ssp6 Tx", NULL, "TestPin_ssp6_out"},
+
+	{ "TestPin_ssp7_in", NULL, "ssp7 Rx"},
+	{ "ssp7 Rx", NULL, "TestPinCp3"},
+
+	{ "TestPinPb3", NULL, "ssp7 Tx"},
+	{ "ssp7 Tx", NULL, "TestPin_ssp7_out"},
+
 };
 
 static int bxt_tdf8532_ssp2_fixup(struct snd_soc_pcm_runtime *rtd,
@@ -369,9 +391,35 @@ static struct snd_soc_dai_link broxton_tdf8532_dais[] = {
 	},
 	{
 		/* SSP5 - TestPin */
-		.name = "SSP5-Codec",
+		.name = "SSP5-Codec1",
 		.id = 5,
 		.cpu_dai_name = "SSP5 Pin",
+		.codec_name = "snd-soc-dummy",
+		.codec_dai_name = "snd-soc-dummy-dai",
+		.platform_name = "0000:00:0e.0",
+		.ignore_suspend = 1,
+		.dpcm_capture = 1,
+		.dpcm_playback = 1,
+		.no_pcm = 1,
+	},
+	{
+		/* SSP5 - codec 2 */
+		.name = "SSP5-Codec2",
+		.id = 6,
+		.cpu_dai_name = "SSP6 Pin",
+		.codec_name = "snd-soc-dummy",
+		.codec_dai_name = "snd-soc-dummy-dai",
+		.platform_name = "0000:00:0e.0",
+		.ignore_suspend = 1,
+		.dpcm_capture = 1,
+		.dpcm_playback = 1,
+		.no_pcm = 1,
+	},
+	{
+		/* SSP5 - codec 3 */
+		.name = "SSP5-Codec3",
+		.id = 7,
+		.cpu_dai_name = "SSP7 Pin",
 		.codec_name = "snd-soc-dummy",
 		.codec_dai_name = "snd-soc-dummy-dai",
 		.platform_name = "0000:00:0e.0",
