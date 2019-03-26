@@ -2337,7 +2337,14 @@ static int sof_set_dai_config(struct snd_sof_dev *sdev, u32 size,
 		if (!dai->name)
 			continue;
 
+		dev_dbg(sdev->dev, "tplg: sof_set_dai_config: dai name: %s\n",
+				dai->name);
+
 		if (strcmp(link->name, dai->name) == 0) {
+
+			dev_dbg(sdev->dev, "tplg: setting dai link - name: %s\n",
+				link->name);
+
 			dai->dai_config = kmemdup(config, size, GFP_KERNEL);
 			if (!dai->dai_config)
 				return -ENOMEM;
@@ -2768,6 +2775,8 @@ static int sof_link_load(struct snd_soc_component *scomp, int index,
 			return -EINVAL;
 		}
 	}
+		
+	dev_dbg(sdev->dev, "sof_link_load: %d hw_configs found!\n", cfg->num_hw_configs);
 
 	/* configure dai IPC message */
 	hw_config = &cfg->hw_config[i];
