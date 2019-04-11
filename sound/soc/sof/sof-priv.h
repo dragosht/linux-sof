@@ -60,6 +60,8 @@
 	(IS_ENABLED(CONFIG_SND_SOC_SOF_DEBUG_ENABLE_DEBUGFS_CACHE) || \
 	 IS_ENABLED(CONFIG_SND_SOC_SOF_DEBUG_IPC_FLOOD_TEST))
 
+#define SOF_DAI_HW_CONFIG_MAX SND_SOC_TPLG_HW_CONFIG_MAX
+
 struct snd_sof_dev;
 struct snd_sof_ipc_msg;
 struct snd_sof_ipc;
@@ -331,6 +333,22 @@ struct snd_sof_route {
 	void *private;
 };
 
+/* ASoC SOF DAI hardware configuration parameters */
+struct snd_sof_hw_config {
+	uint32_t format;
+
+	uint32_t mclk_direction;
+	uint32_t mclk_rate;
+	uint32_t bclk_rate;
+	uint32_t fsync_rate;
+
+	uint32_t tdm_slots;
+	uint32_t tdm_slot_width;
+
+	uint32_t rx_slots;
+	uint32_t tx_slots;
+};
+
 /* ASoC DAI device */
 struct snd_sof_dai {
 	struct snd_sof_dev *sdev;
@@ -338,6 +356,11 @@ struct snd_sof_dai {
 
 	struct sof_ipc_comp_dai comp_dai;
 	struct sof_ipc_dai_config *dai_config;
+
+	struct snd_sof_hw_config hw_config[SOF_DAI_HW_CONFIG_MAX];
+	int num_hw_configs;
+	int cur_hw_config;
+
 	struct list_head list;	/* list in sdev dai list */
 };
 
@@ -638,5 +661,18 @@ int intel_pcm_open(struct snd_sof_dev *sdev,
 		   struct snd_pcm_substream *substream);
 int intel_pcm_close(struct snd_sof_dev *sdev,
 		    struct snd_pcm_substream *substream);
+/* HW Configuration management */
+static inline struct snd_sof_hw_config *sof_dai_get_hw_config(struct snd_sof_dai *dai, int i)
+{
+	return &dai->hw_config[i];
+}
+
+static inline struct snd_sof_hw_config *sof_dai_get_cur_hw_config(struct snd_sof_dai *dai)
+{
+	return &dai->hw_config[dai->cur_hw_config];
+}
+
+int sof_dai_set_cur_hw_config(struct snd_sof_dai *dai, int i);
+int sof_dai_load_hw_config(struct snd_sof_dai *dai);
 
 #endif

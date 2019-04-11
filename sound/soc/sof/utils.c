@@ -110,3 +110,69 @@ void sof_block_read(struct snd_sof_dev *sdev, u32 bar, u32 offset, void *dest,
 	memcpy_fromio(dest, src, size);
 }
 EXPORT_SYMBOL(sof_block_read);
+
+int sof_dai_set_cur_hw_config(struct snd_sof_dai *dai, int i)
+{
+	struct sof_ipc_dai_config *config;
+	struct snd_sof_hw_config *sof_hw_config;
+
+	if (!dai || (dai->dai_config && dai->dai_config->type != SOF_DAI_INTEL_SSP)) {
+		dev_err(dai->sdev->dev, "error: invalid dai\n");
+
+		return -EINVAL;
+	}
+
+	if (i < 0 || i >= dai->num_hw_configs) {
+		dev_err(dai->sdev->dev, "error: dai: %s invalid hw_config index: %d\n",
+			dai->name, i);
+		return -EINVAL;
+	}
+
+	dai->cur_hw_config = i;
+	sof_hw_config = &dai->hw_config[i];
+	config = dai->dai_config;
+
+	config->format = sof_hw_config->format;
+	config->ssp.mclk_rate = sof_hw_config->mclk_rate;
+	config->ssp.bclk_rate = sof_hw_config->bclk_rate;
+	config->ssp.fsync_rate = sof_hw_config->fsync_rate;
+	config->ssp.tdm_slots = sof_hw_config->tdm_slots;
+	config->ssp.tdm_slot_width = sof_hw_config->tdm_slot_width;
+	config->ssp.mclk_direction = sof_hw_config->mclk_direction;
+	config->ssp.rx_slots = sof_hw_config->rx_slots;
+	config->ssp.tx_slots = sof_hw_config->tx_slots;
+
+	return 0;
+}
+
+int sof_dai_load_hw_config(struct snd_sof_dai *dai)
+{
+	struct snd_sof_dev *sdev = dai->sdev;
+	struct sof_ipc_dai_config *config = dai->dai_config;
+	struct sof_ipc_reply reply;
+	u32 size = sizeof(*config);
+	int ret = 0;
+
+	dev_dbg(sdev->dev, "dai: %s loading hardware configuration: %d/%d\n",
+		dai->name, dai->cur_hw_config, dai->num_hw_configs);
+
+	dev_dbg(sdev->dev, "config SSP%d fmt 0x%x mclk %d bclk %d fclk %d width (%d)%d slots %d mclk id %d quirks %d\n",
+		config->dai_index, config->format,
+		config->ssp.mclk_rate, config->ssp.bclk_rate,
+		config->ssp.fsync_rate, config->ssp.sample_valid_bits,
+		config->ssp.tdm_slot_width, config->ssp.tdm_slots,
+		config->ssp.mclk_id, config->ssp.quirks);
+
+	/* send message to DSP */
+	ret = sof_ipc_tx_message(sdev->ipc,
+				 config->hdr.cmd, config, size, &reply,
+				 sizeof(reply));
+
+	if (ret < 0) {
+		dev_err(sdev->dev, "error: failed to set DAI config for SSP%d\n",
+			config->dai_index);
+		return ret;
+	}
+
+	return ret;
+}
