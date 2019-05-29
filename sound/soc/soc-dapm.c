@@ -885,6 +885,8 @@ static int dapm_create_or_share_kcontrol(struct snd_soc_dapm_widget *w,
 			case snd_soc_dapm_pga:
 			case snd_soc_dapm_effect:
 			case snd_soc_dapm_out_drv:
+			case snd_soc_dapm_dai_in:
+			case snd_soc_dapm_dai_out:
 				wname_in_long_name = true;
 				kcname_in_long_name = true;
 				break;
@@ -3201,6 +3203,8 @@ int snd_soc_dapm_new_widgets(struct snd_soc_card *card)
 		case snd_soc_dapm_pga:
 		case snd_soc_dapm_effect:
 		case snd_soc_dapm_out_drv:
+		case snd_soc_dapm_dai_in:
+		case snd_soc_dapm_dai_out:
 			dapm_new_pga(w);
 			break;
 		case snd_soc_dapm_dai_link:
