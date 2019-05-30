@@ -212,6 +212,8 @@ int snd_sof_enum_get(struct snd_kcontrol *kcontrol,
 	unsigned int i, channels = scontrol->num_channels;
 	int err, ret;
 
+	dev_dbg(sdev->dev, "control: %s enum_get\n", kcontrol->id.name);
+
 	ret = pm_runtime_get_sync(sdev->dev);
 	if (ret < 0) {
 		dev_err_ratelimited(sdev->dev,
@@ -251,6 +253,8 @@ int snd_sof_enum_put(struct snd_kcontrol *kcontrol,
 	struct sof_ipc_ctrl_data *cdata = scontrol->control_data;
 	unsigned int i, channels = scontrol->num_channels;
 	int ret, err;
+
+	dev_dbg(sdev->dev, "control: %s enum_get\n", kcontrol->id.name);
 
 	ret = pm_runtime_get_sync(sdev->dev);
 	if (ret < 0) {
