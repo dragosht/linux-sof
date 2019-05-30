@@ -2392,6 +2392,8 @@ static int sof_link_ssp_load(struct snd_soc_component *scomp, int index,
 		if (strcmp(link->name, sof_dai->name))
 			continue;
 
+		dev_dbg(sdev->dev, "tplg: Setting up dai: %s\n", sof_dai->name);
+
 		sof_dai->num_hw_configs = num_hw_configs;
 		sof_dai->cur_hw_config = 0;
 
@@ -2454,9 +2456,12 @@ static int sof_link_ssp_load(struct snd_soc_component *scomp, int index,
 			if (tplg_hw_config->id == le32_to_cpu(cfg->default_hw_config_id)) {
 				dev_dbg(sdev->dev, "tplg: dai: %s setting hw_config %d as default\n",
 					sof_dai->name, i);
-				sof_dai_set_cur_hw_config(sof_dai, i);
+				//sof_dai_set_cur_hw_config(sof_dai, i);
 				default_found = 1;
 			}
+
+			sof_dai_set_cur_hw_config(sof_dai, i);
+			sof_dai_load_hw_config(sof_dai);
 		}
 
 		if (!default_found) {
@@ -2465,7 +2470,7 @@ static int sof_link_ssp_load(struct snd_soc_component *scomp, int index,
 			return -EINVAL;
 		}
 
-		sof_dai_load_hw_config(sof_dai);
+		//sof_dai_load_hw_config(sof_dai);
 	}
 
 	return ret;
