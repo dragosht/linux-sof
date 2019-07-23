@@ -88,297 +88,307 @@ static int bxt_tdf8532_ssp2_fixup(struct snd_soc_pcm_runtime *rtd,
 }
 
 /* broxton digital audio interface glue - connects codec <--> CPU */
+SND_SOC_DAILINK_DEF(dummy,
+	DAILINK_COMP_ARRAY(COMP_DUMMY()));
+
+SND_SOC_DAILINK_DEF(speaker,
+	DAILINK_COMP_ARRAY(COMP_CPU("Speaker Pin")));
+
+SND_SOC_DAILINK_DEF(dirana_capture,
+	DAILINK_COMP_ARRAY(COMP_CPU("Dirana Cp Pin")));
+
+SND_SOC_DAILINK_DEF(dirana_playback,
+	DAILINK_COMP_ARRAY(COMP_CPU("Dirana Pb Pin")));
+
+SND_SOC_DAILINK_DEF(testpin_capture,
+	DAILINK_COMP_ARRAY(COMP_CPU("TestPin Cp Pin")));
+
+SND_SOC_DAILINK_DEF(testpin_playback,
+	DAILINK_COMP_ARRAY(COMP_CPU("TestPin Pb Pin")));
+
+SND_SOC_DAILINK_DEF(bthfp_capture,
+	DAILINK_COMP_ARRAY(COMP_CPU("BtHfp Cp Pin")));
+
+SND_SOC_DAILINK_DEF(bthfp_playback,
+	DAILINK_COMP_ARRAY(COMP_CPU("BtHfp Pb Pin")));
+
+SND_SOC_DAILINK_DEF(modem_capture,
+	DAILINK_COMP_ARRAY(COMP_CPU("Modem Cp Pin")));
+
+SND_SOC_DAILINK_DEF(modem_playback,
+	DAILINK_COMP_ARRAY(COMP_CPU("Modem Pb Pin")));
+
+SND_SOC_DAILINK_DEF(hdmi_capture,
+	DAILINK_COMP_ARRAY(COMP_CPU("HDMI Cp Pin")));
+
+SND_SOC_DAILINK_DEF(dirana_aux_capture,
+	DAILINK_COMP_ARRAY(COMP_CPU("Dirana Aux Cp Pin")));
+
+SND_SOC_DAILINK_DEF(dirana_tuner_capture,
+	DAILINK_COMP_ARRAY(COMP_CPU("Dirana Tuner Cp Pin")));
+
+SND_SOC_DAILINK_DEF(probe_playback,
+	DAILINK_COMP_ARRAY(COMP_CPU("Compress Probe0 Pin")));
+
+SND_SOC_DAILINK_DEF(probe_capture,
+	DAILINK_COMP_ARRAY(COMP_CPU("Compress Probe1 Pin")));
+
+SND_SOC_DAILINK_DEF(tracebuffer0,
+	DAILINK_COMP_ARRAY(COMP_CPU("TraceBuffer0 Pin")));
+
+SND_SOC_DAILINK_DEF(tracebuffer1,
+	DAILINK_COMP_ARRAY(COMP_CPU("TraceBuffer1 Pin")));
+
+SND_SOC_DAILINK_DEF(ssp0_pin,
+	DAILINK_COMP_ARRAY(COMP_CPU("SSP0 Pin")));
+
+SND_SOC_DAILINK_DEF(ssp1_pin,
+	DAILINK_COMP_ARRAY(COMP_CPU("SSP1 Pin")));
+
+SND_SOC_DAILINK_DEF(ssp2_pin,
+	DAILINK_COMP_ARRAY(COMP_CPU("SSP2 Pin")));
+
+SND_SOC_DAILINK_DEF(ssp3_pin,
+	DAILINK_COMP_ARRAY(COMP_CPU("SSP3 Pin")));
+
+SND_SOC_DAILINK_DEF(ssp4_pin,
+	DAILINK_COMP_ARRAY(COMP_CPU("SSP4 Pin")));
+
+SND_SOC_DAILINK_DEF(ssp4_codec,
+	DAILINK_COMP_ARRAY(COMP_CODEC("i2c-INT34C3:00",
+				      "tdf8532-hifi")));
+
+SND_SOC_DAILINK_DEF(ssp5_pin,
+	DAILINK_COMP_ARRAY(COMP_CPU("SSP5 Pin")));
+
+SND_SOC_DAILINK_DEF(platform,
+	DAILINK_COMP_ARRAY(COMP_PLATFORM("0000:00:0e.0")));
+
 static struct snd_soc_dai_link broxton_tdf8532_dais[] = {
 	/* Front End DAI links */
 	{
 		.name = "Speaker Port",
 		.stream_name = "Speaker",
-		.cpu_dai_name = "Speaker Pin",
-		.platform_name = "0000:00:0e.0",
 		.nonatomic = 1,
 		.dynamic = 1,
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
 		.trigger = {
 			SND_SOC_DPCM_TRIGGER_POST,
 			SND_SOC_DPCM_TRIGGER_POST
 		},
 		.dpcm_playback = 1,
+		SND_SOC_DAILINK_REG(speaker, dummy, platform),
 	},
 	{
 		.name = "Dirana Capture Port",
 		.stream_name = "Dirana Cp",
-		.cpu_dai_name = "Dirana Cp Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.init = NULL,
 		.dpcm_capture = 1,
 		.ignore_suspend = 1,
 		.nonatomic = 1,
 		.dynamic = 1,
+		SND_SOC_DAILINK_REG(dirana_capture, dummy, platform),
 	},
 	{
 		.name = "Dirana Playback Port",
 		.stream_name = "Dirana Pb",
-		.cpu_dai_name = "Dirana Pb Pin",
-		.platform_name = "0000:00:0e.0",
 		.nonatomic = 1,
 		.dynamic = 1,
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
 		.trigger = {
 			SND_SOC_DPCM_TRIGGER_POST,
 			SND_SOC_DPCM_TRIGGER_POST
 		},
 		.dpcm_playback = 1,
+		SND_SOC_DAILINK_REG(dirana_playback, dummy, platform),
 	},
 	{
 		.name = "TestPin Capture Port",
 		.stream_name = "TestPin Cp",
-		.cpu_dai_name = "TestPin Cp Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.init = NULL,
 		.dpcm_capture = 1,
 		.ignore_suspend = 1,
 		.nonatomic = 1,
 		.dynamic = 1,
+		SND_SOC_DAILINK_REG(testpin_capture, dummy, platform),
 	},
 	{
 		.name = "TestPin Playback Port",
 		.stream_name = "TestPin Pb",
-		.cpu_dai_name = "TestPin Pb Pin",
-		.platform_name = "0000:00:0e.0",
 		.nonatomic = 1,
 		.dynamic = 1,
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
 		.trigger = {
 			SND_SOC_DPCM_TRIGGER_POST,
 			SND_SOC_DPCM_TRIGGER_POST
 		},
 		.dpcm_playback = 1,
+		SND_SOC_DAILINK_REG(testpin_playback, dummy, platform),
 	},
 	{
 		.name = "BtHfp Capture Port",
 		.stream_name = "BtHfp Cp",
-		.cpu_dai_name = "BtHfp Cp Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.init = NULL,
 		.dpcm_capture = 1,
 		.ignore_suspend = 1,
 		.nonatomic = 1,
 		.dynamic = 1,
+		SND_SOC_DAILINK_REG(bthfp_capture, dummy, platform),
 	},
 	{
 		.name = "BtHfp Playback Port",
 		.stream_name = "BtHfp Pb",
-		.cpu_dai_name = "BtHfp Pb Pin",
-		.platform_name = "0000:00:0e.0",
 		.nonatomic = 1,
 		.dynamic = 1,
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
 		.trigger = {
 			SND_SOC_DPCM_TRIGGER_POST,
 			SND_SOC_DPCM_TRIGGER_POST
 		},
 		.dpcm_playback = 1,
+		SND_SOC_DAILINK_REG(bthfp_playback, dummy, platform),
 	},
 	{
 		.name = "Modem Capture Port",
 		.stream_name = "Modem Cp",
-		.cpu_dai_name = "Modem Cp Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.init = NULL,
 		.dpcm_capture = 1,
 		.ignore_suspend = 1,
 		.nonatomic = 1,
 		.dynamic = 1,
+		SND_SOC_DAILINK_REG(modem_capture, dummy, platform),
 	},
 	{
 		.name = "Modem Playback Port",
 		.stream_name = "Modem Pb",
-		.cpu_dai_name = "Modem Pb Pin",
-		.platform_name = "0000:00:0e.0",
 		.nonatomic = 1,
 		.dynamic = 1,
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
 		.trigger = {
 			SND_SOC_DPCM_TRIGGER_POST,
 			SND_SOC_DPCM_TRIGGER_POST
 		},
 		.dpcm_playback = 1,
+		SND_SOC_DAILINK_REG(modem_playback, dummy, platform),
 	},
 	{
 		.name = "HDMI Capture Port",
 		.stream_name = "HDMI Cp",
-		.cpu_dai_name = "HDMI Cp Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.init = NULL,
 		.dpcm_capture = 1,
 		.ignore_suspend = 1,
 		.nonatomic = 1,
 		.dynamic = 1,
+		SND_SOC_DAILINK_REG(hdmi_capture, dummy, platform),
 	},
 	{
 		.name = "Dirana Aux Capture Port",
 		.stream_name = "Dirana Aux Cp",
-		.cpu_dai_name = "Dirana Aux Cp Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.init = NULL,
 		.dpcm_capture = 1,
 		.ignore_suspend = 1,
 		.nonatomic = 1,
 		.dynamic = 1,
+		SND_SOC_DAILINK_REG(dirana_aux_capture, dummy, platform),
 	},
 	{
 		.name = "Dirana Tuner Capture Port",
 		.stream_name = "Dirana Tuner Cp",
-		.cpu_dai_name = "Dirana Tuner Cp Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.init = NULL,
 		.dpcm_capture = 1,
 		.ignore_suspend = 1,
 		.nonatomic = 1,
 		.dynamic = 1,
+		SND_SOC_DAILINK_REG(dirana_tuner_capture, dummy, platform),
 	},
 	/* Probe DAI links*/
 	{
 		.name = "Bxt Compress Probe playback",
 		.stream_name = "Probe Playback",
-		.cpu_dai_name = "Compress Probe0 Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.init = NULL,
 		.nonatomic = 1,
 		.dynamic = 1,
+		SND_SOC_DAILINK_REG(probe_playback, dummy, platform),
 	},
 	{
 		.name = "Bxt Compress Probe capture",
 		.stream_name = "Probe Capture",
-		.cpu_dai_name = "Compress Probe1 Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.init = NULL,
 		.nonatomic = 1,
 		.dynamic = 1,
+		SND_SOC_DAILINK_REG(probe_capture, dummy, platform),
 	},
 	/* Trace Buffer DAI links */
 	{
 		.name = "Bxt Trace Buffer0",
 		.stream_name = "Core 0 Trace Buffer",
-		.cpu_dai_name = "TraceBuffer0 Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.capture_only = true,
 		.ignore_suspend = 1,
 		.dynamic = 1,
+		SND_SOC_DAILINK_REG(tracebuffer0, dummy, platform),
 	},
 	{
 		.name = "Bxt Trace Buffer1",
 		.stream_name = "Core 1 Trace Buffer",
-		.cpu_dai_name = "TraceBuffer1 Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.capture_only = true,
 		.ignore_suspend = 1,
 		.dynamic = 1,
+		SND_SOC_DAILINK_REG(tracebuffer1, dummy, platform),
 	},
 	/* Back End DAI links */
 	{
 		/* SSP0 - BT */
 		.name = "SSP0-Codec",
 		.id = 0,
-		.cpu_dai_name = "SSP0 Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.ignore_suspend = 1,
 		.dpcm_capture = 1,
 		.dpcm_playback = 1,
 		.no_pcm = 1,
+		SND_SOC_DAILINK_REG(ssp0_pin, dummy, platform),
 	},
 	{
 		/* SSP1 - HDMI-In */
 		.name = "SSP1-Codec",
 		.id = 1,
-		.cpu_dai_name = "SSP1 Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.ignore_suspend = 1,
 		.dpcm_capture = 1,
 		.no_pcm = 1,
+		SND_SOC_DAILINK_REG(ssp1_pin, dummy, platform),
 	},
 	{
 		/* SSP2 - Dirana */
 		.name = "SSP2-Codec",
 		.id = 2,
-		.cpu_dai_name = "SSP2 Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.ignore_suspend = 1,
 		.dpcm_capture = 1,
 		.dpcm_playback = 1,
 		.no_pcm = 1,
 		.be_hw_params_fixup = bxt_tdf8532_ssp2_fixup,
+		SND_SOC_DAILINK_REG(ssp2_pin, dummy, platform),
 	},
 	{
 		/* SSP3 - Modem */
 		.name = "SSP3-Codec",
 		.id = 3,
-		.cpu_dai_name = "SSP3 Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.ignore_suspend = 1,
 		.dpcm_capture = 1,
 		.dpcm_playback = 1,
 		.no_pcm = 1,
+		SND_SOC_DAILINK_REG(ssp3_pin, dummy, platform),
 	},
 	{
 		/* SSP4 - Amplifier */
 		.name = "SSP4-Codec",
 		.id = 4,
-		.cpu_dai_name = "SSP4 Pin",
-		.codec_name = "i2c-INT34C3:00",
-		.codec_dai_name = "tdf8532-hifi",
-		.platform_name = "0000:00:0e.0",
 		.ignore_suspend = 1,
 		.dpcm_playback = 1,
 		.no_pcm = 1,
+		SND_SOC_DAILINK_REG(ssp4_pin, ssp4_codec, platform),
 	},
 	{
 		/* SSP5 - TestPin */
 		.name = "SSP5-Codec",
 		.id = 5,
-		.cpu_dai_name = "SSP5 Pin",
-		.codec_name = "snd-soc-dummy",
-		.codec_dai_name = "snd-soc-dummy-dai",
-		.platform_name = "0000:00:0e.0",
 		.ignore_suspend = 1,
 		.dpcm_capture = 1,
 		.dpcm_playback = 1,
 		.no_pcm = 1,
+		SND_SOC_DAILINK_REG(ssp5_pin, dummy, platform),
 	},
 };
 
@@ -386,7 +396,7 @@ static struct snd_soc_dai_link broxton_tdf8532_dais[] = {
 static int bxt_add_dai_link(struct snd_soc_card *card,
 			    struct snd_soc_dai_link *link)
 {
-	link->platform_name = "0000:00:0e.0";
+	//link->platform_name = "0000:00:0e.0";
 	link->nonatomic = 1;
 	return 0;
 }
