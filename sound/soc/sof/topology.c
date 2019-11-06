@@ -1044,6 +1044,9 @@ static int sof_control_load_bytes(struct snd_soc_component *scomp,
 		memcpy(cdata->data, control->priv.data,
 		       le32_to_cpu(control->priv.size));
 
+		dev_dbg(sdev->dev, "scontrol->size %d, max_size: %d priv_size: %d data_size: %d\n",
+		scontrol->size, max_size, le32_to_cpu(control->priv.size), cdata->data->size);
+
 		if (cdata->data->magic != SOF_ABI_MAGIC) {
 			dev_err(sdev->dev, "error: Wrong ABI magic 0x%08x.\n",
 				cdata->data->magic);
