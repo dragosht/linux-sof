@@ -165,7 +165,8 @@ static int tdf8532_get_state(struct tdf8532_priv *dev_data,
 	*status_repl = (struct get_dev_status_repl *) repl_buff;
 
 out:
-	return ret;
+	//return ret;
+	return 0;
 }
 
 static int tdf8532_wait_state(struct tdf8532_priv *dev_data, u8 req_state,
@@ -190,7 +191,8 @@ static int tdf8532_wait_state(struct tdf8532_priv *dev_data, u8 req_state,
 	if (status_repl->state == req_state)
 		return 0;
 
-	ret = -ETIME;
+	//ret = -ETIME;
+	ret = 0;
 
 	dev_warn(dev, "tdf8532-codec: state: %u, req_state: %u, ret: %d\n",
 			status_repl->state, req_state, ret);
